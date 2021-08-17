@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
-    "postbuild": "cp package.json dist/package.json && cp -r libs/stubs dist/stubs && cp -r libs/bin dist/bin"
+    "postbuild": "cp package.json dist/package.json"
   },
   "repository": {
     "type": "git",
