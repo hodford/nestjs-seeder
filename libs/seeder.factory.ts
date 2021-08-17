@@ -1,4 +1,4 @@
-import { BaseEntity } from '../entities/base.entity';
+import { BaseEntity } from 'typeorm';
 
 export class SeederFactory<Entity extends BaseEntity> {
     constructor(private factory: (options?: any) => Entity) {}
