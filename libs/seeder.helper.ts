@@ -2,6 +2,7 @@ import { BaseEntity, ObjectType } from 'typeorm';
 import { SeederFactory } from './seeder.factory';
 import { glob } from 'glob';
 import { isString } from '@nestjs/common/utils/shared.utils';
+import path from 'path';
 
 const factories = {};
 
@@ -13,28 +14,31 @@ export function factory<Entity extends BaseEntity>(entity: ObjectType<Entity>) {
     return new SeederFactory<Entity>(factories[entity.toString()]);
 }
 
-export function scanFactories() {
-    return new Promise<void>((resolve, reject) => {
-        let rootPath = process.cwd();
-        let path = `${rootPath}/**/databases/factories/*.factory.js`;
-        if (rootPath.endsWith('src') || rootPath.endsWith('src/')) {
-            path = `${rootPath}/**/databases/factories/*.factory.ts`; // Find better solution
-        }
-        new glob.Glob(path, {}, (error, files) => {
+function getListFile(filePattern): Promise<string[]> {
+    return new Promise<string[]>((resolve, reject) => {
+        new glob.Glob(filePattern, {}, (error, files) => {
             if (error) {
                 reject(error);
             } else {
                 try {
-                    for (let file of files) {
-                        require(file);
-                    }
-                    resolve();
+                    resolve(files);
                 } catch (e) {
                     reject(e);
                 }
             }
         });
     });
+}
+
+export async function scanFactories() {
+    let rootPath = process.cwd();
+    let files = await getListFile(path.resolve(`${rootPath}/**/databases/factories/*.factory.ts`));
+    if (!files.length) {
+        files = await getListFile(path.resolve(`${rootPath}/**/databases/factories/*.factory.js`));
+    }
+    for (let file of files) {
+        require(file);
+    }
 }
 
 export async function runSeeder(seeder) {
